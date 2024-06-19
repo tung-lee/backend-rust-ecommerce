@@ -2,4 +2,11 @@
 
 ### sign-up
 
-POST {{url_dev}}/shop/sign-up 
+POST {{url_dev}}/shop/sign-up
+Content-Type: application/json
+
+{
+	"name": "Shop Test",
+	"email": "shop_test@gmail.com",
+	"password": "abc123"
+}

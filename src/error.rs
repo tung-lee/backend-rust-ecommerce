@@ -1,5 +1,5 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -15,7 +15,7 @@ pub enum Error {
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        #[derive(Serialize, Deserialize)]
+        #[derive(Serialize)]
         struct ErrorResponse {
             code: String,
             message: String,

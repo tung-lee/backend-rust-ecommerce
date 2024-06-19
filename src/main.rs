@@ -7,6 +7,8 @@ mod models;
 mod routes;
 mod services;
 mod controllers;
+mod auth;
+mod utils;
 
 use error::Result;
 

@@ -17,7 +17,7 @@ pub async fn get_app() -> Result<Router> {
     let client = connect(None).await?;
     check_overload(&client).await;
     let db = client.database("backend-ecomerce");
-    let _ = create_all_collections(&db).await;
+    let _ = create_all_collections(&db).await?;
 
     // init routes
     let app = create_router().layer(

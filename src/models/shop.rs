@@ -1,5 +1,5 @@
 use mongodb::{
-    bson::doc,
+    bson::{doc, Bson},
     options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
     Database,
 };
@@ -10,7 +10,7 @@ use crate::{
     error::{Error, Result},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Shop {
     pub name: String,
     pub email: String,
@@ -20,6 +20,12 @@ pub struct Shop {
     pub roles: Vec<ShopRole>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct ShopDTO {
+    pub name: String,
+    pub email: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateShop {
     pub name: String,
@@ -27,22 +33,22 @@ pub struct CreateShop {
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ShopStatus {
     Active,
     Inactive,
 }
 
-impl ShopStatus {
-    fn to_string(&self) -> String {
-        match self {
-            ShopStatus::Active => "active".to_string(),
-            ShopStatus::Inactive => "inactive".to_string(),
+impl From<ShopStatus> for Bson {
+    fn from(status: ShopStatus) -> Self {
+        match status {
+            ShopStatus::Active => Bson::String("Active".to_string()),
+            ShopStatus::Inactive => Bson::String("Inactive".to_string()),
         }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ShopRole {
     Shop,
     Write,
@@ -50,13 +56,13 @@ pub enum ShopRole {
     Admin,
 }
 
-impl ShopRole {
-    fn to_string(&self) -> String {
-        match self {
-            ShopRole::Shop => "SHOP".to_string(),
-            ShopRole::Write => "WRITE".to_string(),
-            ShopRole::Editor => "EDITOR".to_string(),
-            ShopRole::Admin => "ADMIN".to_string(),
+impl From<ShopRole> for Bson {
+    fn from(role: ShopRole) -> Self {
+        match role {
+            ShopRole::Shop => Bson::String("Shop".to_string()),
+            ShopRole::Write => Bson::String("Write".to_string()),
+            ShopRole::Editor => Bson::String("Editor".to_string()),
+            ShopRole::Admin => Bson::String("Admin".to_string()),
         }
     }
 }
@@ -66,32 +72,32 @@ pub async fn schema(db: &Database) -> Result<()> {
         "$jsonSchema": doc! {
            "bsonType": "object",
            "title": "Shop Object Validation",
+           "required": vec![ "password" ],
            "properties": doc! {
-                "name": doc! {
-                    "bsonType": "string",
-                    "maxLength": 150
+              "name": doc! {
+                  "bsonType": "string",
+                  "maxLength": 150
               },
-                "email": doc! {
-                    "bsonType": "string",
+              "email": doc! {
+                  "bsonType": "string",
               },
-                "password": doc! {
-                    "bsonType": "string",
-
+              "password": doc! {
+                  "bsonType": "string",
               },
-                "verify": doc! {
-                    "bsonType": "bool",
+              "status": doc! {
+                  "enum": vec! [ShopStatus::Active, ShopStatus::Inactive],
+              },
+              "verify": doc! {
+                  "bsonType": "bool",
                 },
-                "status": doc! {
-                    "enum": vec! [ShopStatus::Active.to_string(), ShopStatus::Inactive.to_string()],
-              },
               "roles": doc! {
-                    "bsonType": "array",
-                    "items": {
-                        "enum": vec! [
-                            ShopRole::Shop.to_string(),
-                            ShopRole::Write.to_string(),
-                            ShopRole::Editor.to_string(),
-                            ShopRole::Admin.to_string(),],
+                  "bsonType": "array",
+                  "items": {
+                      "enum": vec! [
+                          ShopRole::Shop,
+                          ShopRole::Write,
+                          ShopRole::Editor,
+                          ShopRole::Admin,],
                     },
               },
            }
